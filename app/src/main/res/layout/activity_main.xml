@@ -11,7 +11,7 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Header Bar -->
+        <!-- Bar Buttons -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -20,14 +20,23 @@
             android:layout_marginBottom="16dp">
 
             <TextView
-                android:id="@+id/tvAppTitle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="BonPeint Pro"
-                android:textSize="22sp"
+                android:textSize="20sp"
                 android:textStyle="bold"
                 android:textColor="#1E293B" />
+
+            <Button
+                android:id="@+id/btnReset"
+                android:layout_width="wrap_content"
+                android:layout_height="38dp"
+                android:backgroundTint="#DC2626"
+                android:text="جديد / Nouveau"
+                android:textSize="11sp"
+                android:textColor="#FFFFFF"
+                android:layout_marginEnd="6dp" />
 
             <Button
                 android:id="@+id/btnLang"
@@ -35,13 +44,12 @@
                 android:layout_height="38dp"
                 android:backgroundTint="#3B82F6"
                 android:text="FR | AR"
-                android:textSize="12sp"
+                android:textSize="11sp"
                 android:textColor="#FFFFFF" />
         </LinearLayout>
 
         <!-- Document Type Selector -->
         <TextView
-            android:id="@+id/lblDocType"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Type de document / نوع الوثيقة"
@@ -78,23 +86,40 @@
             android:textSize="14sp"
             android:layout_marginBottom="8dp" />
 
-        <EditText
-            android:id="@+id/editCity"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:text="Hassi Messaoud"
-            android:hint="Ville / المدينة"
-            android:background="#FFFFFF"
-            android:paddingHorizontal="12dp"
-            android:textSize="14sp"
-            android:layout_marginBottom="16dp" />
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <EditText
+                android:id="@+id/editCity"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="Hassi Messaoud"
+                android:hint="Ville / المدينة"
+                android:background="#FFFFFF"
+                android:paddingHorizontal="12dp"
+                android:textSize="14sp"
+                android:layout_marginEnd="6dp" />
+
+            <EditText
+                android:id="@+id/editDate"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:hint="Date / التاريخ"
+                android:background="#FFFFFF"
+                android:paddingHorizontal="12dp"
+                android:textSize="14sp" />
+        </LinearLayout>
 
         <!-- Add Items Section -->
         <TextView
-            android:id="@+id/lblAddItem"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Ajouter une fourniture / إضافة سلعة"
+            android:text="Ajouter une fourniture / إضافة مادة"
             android:textSize="13sp"
             android:textStyle="bold"
             android:textColor="#475569"
@@ -140,7 +165,6 @@
 
         <!-- Table Container -->
         <TextView
-            android:id="@+id/lblList"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Liste des articles / قائمة السلع المضافة:"
@@ -158,16 +182,35 @@
             android:stretchColumns="1"
             android:layout_marginBottom="20dp" />
 
-        <!-- Action Button -->
-        <Button
-            android:id="@+id/btnGenerate"
+        <!-- Print & Share Actions -->
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="54dp"
-            android:backgroundTint="#15803D"
-            android:textColor="#FFFFFF"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:text="Générer &amp; Partager Document (PDF)" />
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnPrint"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_weight="1"
+                android:backgroundTint="#0F766E"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:text="Imprimer / طباعة (Bluetooth)"
+                android:layout_marginEnd="6dp" />
+
+            <Button
+                android:id="@+id/btnGenerate"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_weight="1"
+                android:backgroundTint="#15803D"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:text="PDF / مشاركة" />
+        </LinearLayout>
 
     </LinearLayout>
 </ScrollView>
