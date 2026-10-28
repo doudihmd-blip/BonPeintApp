@@ -41,7 +41,7 @@ class MainActivity : Activity() {
 
     private val docTypesAr = arrayOf(
         "كشف المواد المشتراة",
-        "طلب شراء",
+        "طلب شراء (سلعة)",
         "وصل تسليم السلعة",
         "وصل شراء"
     )
@@ -97,25 +97,10 @@ class MainActivity : Activity() {
             val header = TableRow(this)
             header.setBackgroundColor(Color.LTGRAY)
 
-            val h1 = TextView(this)
-            h1.text = " N° "
-            h1.setTypeface(null, Typeface.BOLD)
-            h1.setPadding(6, 6, 6, 6)
-
-            val h2 = TextView(this)
-            h2.text = if (isFrench) " Désignation " else " المادة "
-            h2.setTypeface(null, Typeface.BOLD)
-            h2.setPadding(6, 6, 6, 6)
-
-            val h3 = TextView(this)
-            h3.text = if (isFrench) " Qté " else " الكمية "
-            h3.setTypeface(null, Typeface.BOLD)
-            h3.setPadding(6, 6, 6, 6)
-
-            val h4 = TextView(this)
-            h4.text = " X "
-            h4.setTypeface(null, Typeface.BOLD)
-            h4.setPadding(6, 6, 6, 6)
+            val h1 = TextView(this).apply { text = " N° "; setTypeface(null, Typeface.BOLD); setPadding(6, 6, 6, 6) }
+            val h2 = TextView(this).apply { text = if (isFrench) " Désignation " else " المادة "; setTypeface(null, Typeface.BOLD); setPadding(6, 6, 6, 6) }
+            val h3 = TextView(this).apply { text = if (isFrench) " Qté " else " الكمية "; setTypeface(null, Typeface.BOLD); setPadding(6, 6, 6, 6) }
+            val h4 = TextView(this).apply { text = " X "; setTypeface(null, Typeface.BOLD); setPadding(6, 6, 6, 6) }
 
             header.addView(h1)
             header.addView(h2)
@@ -128,24 +113,17 @@ class MainActivity : Activity() {
                 val row = TableRow(this)
                 row.setBackgroundColor(Color.WHITE)
 
-                val t1 = TextView(this)
-                t1.text = " ${i + 1} "
-                t1.setPadding(6, 6, 6, 6)
+                val t1 = TextView(this).apply { text = " ${i + 1} "; setPadding(6, 6, 6, 6) }
+                val t2 = TextView(this).apply { text = " ${itm.name} "; setPadding(6, 6, 6, 6) }
+                val t3 = TextView(this).apply { text = " ${itm.quantity} "; setPadding(6, 6, 6, 6) }
 
-                val t2 = TextView(this)
-                t2.text = " ${itm.name} "
-                t2.setPadding(6, 6, 6, 6)
-
-                val t3 = TextView(this)
-                t3.text = " ${itm.quantity} "
-                t3.setPadding(6, 6, 6, 6)
-
-                val bDel = Button(this)
-                bDel.text = "X"
-                bDel.setTextColor(Color.RED)
-                bDel.setOnClickListener {
-                    items.removeAt(i)
-                    refreshTable()
+                val bDel = Button(this).apply {
+                    text = "X"
+                    setTextColor(Color.RED)
+                    setOnClickListener {
+                        items.removeAt(i)
+                        refreshTable()
+                    }
                 }
 
                 row.addView(t1)
@@ -191,13 +169,14 @@ class MainActivity : Activity() {
         }
 
         fun createPdf(): File {
+            val docIndex = spinnerDocType.selectedItemPosition
             val title = spinnerDocType.selectedItem.toString()
-            val project = editProject.text.toString().trim().ifEmpty { "VILLA DE MONSIEUR RAFIK AZZOUZ" }
-            val client = editClient.text.toString().trim().ifEmpty { "Monsieur Rafik Azzouz" }
+            val project = editProject.text.toString().trim().ifEmpty { "TRAVAUX DE PEINTURE" }
+            val client = editClient.text.toString().trim().ifEmpty { "Client" }
             val city = editCity.text.toString().trim().ifEmpty { "Hassi Messaoud" }
             val date = editDate.text.toString().trim().ifEmpty { getDateStr() }
 
-            return writePdf(items, title, project, client, city, date, isFrench)
+            return writePdf(items, title, project, client, city, date, isFrench, docIndex)
         }
 
         btnGenerate.setOnClickListener {
@@ -273,7 +252,8 @@ class MainActivity : Activity() {
         client: String,
         city: String,
         dateStr: String,
-        fr: Boolean
+        fr: Boolean,
+        docIndex: Int
     ): File {
         val doc = PdfDocument()
         val info = PdfDocument.PageInfo.Builder(595, 842, 1).create()
@@ -323,30 +303,39 @@ class MainActivity : Activity() {
         val dateLabel = if (fr) "$city, le $dateStr" else "$city، في $dateStr"
         canvas.drawText(dateLabel, rx, 135f, pRight)
 
-        canvas.drawText(if (fr) "Destinataire : $client" else "المستلم: $client", lx, 165f, pBold)
-        canvas.drawText(
-            if (fr) "Objet : Récapitulatif des fournitures de peinture achetées pour les travaux de la villa."
-            else "الموضوع: بيان مقتنيات ولوازم الدهان المشتراة لأشغال الورشة.",
-            lx,
-            185f,
-            pText
-        )
+        val isOrder = (docIndex == 1) // Bon de commande / طلب شراء
+
+        val destLabel = if (fr) "Destinataire : $client" else "المستلم: $client"
+        canvas.drawText(destLabel, lx, 165f, pBold)
+
+        val objText = if (isOrder) {
+            if (fr) "Objet : Commande de fournitures de peinture pour chantier."
+            else "الموضوع: طلب توريد مستلزمات دهان للورشة."
+        } else {
+            if (fr) "Objet : Récapitulatif des fournitures de peinture achetées pour les travaux."
+            else "الموضوع: بيان مقتنيات ولوازم الدهان المشتراة لأشغال الورشة."
+        }
+        canvas.drawText(objText, lx, 185f, pText)
 
         canvas.drawText(if (fr) "Monsieur," else "سيدي،", lx, 215f, pText)
-        canvas.drawText(
+
+        val body1 = if (isOrder) {
+            if (fr) "Nous vous prions de bien vouloir nous préparer les fournitures de peinture"
+            else "يرجى التكرم بتجهيز وتوفير مستلزمات ولوازم الدهان الموضحة أدناه،"
+        } else {
             if (fr) "Veuillez trouver ci-dessous la liste des fournitures de peinture que nous avons"
-            else "تجدون أدناه قائمة بلوازم الدهان التي تم اقتناؤها ومطابقتها لاحتياجات ورشتكم،",
-            lx,
-            235f,
-            pText
-        )
-        canvas.drawText(
+            else "تجدون أدناه قائمة بلوازم الدهان التي تم اقتناؤها ومطابقتها لاحتياجات ورشتكم،"
+        }
+        canvas.drawText(body1, lx, 235f, pText)
+
+        val body2 = if (isOrder) {
+            if (fr) "mentionnées ci-dessous, nécessaires pour la continuité des travaux :"
+            else "والمطلوبة لمواصلة واستمرار الأشغال في أفضل الظروف:"
+        } else {
             if (fr) "achetées pour les travaux de votre villa, conformément aux besoins du chantier."
-            else "وفقاً لمتطلبات واستمرار العمل في أحسن الظروف.",
-            lx,
-            250f,
-            pText
-        )
+            else "وفقاً لمتطلبات واستمرار العمل في أحسن الظروف."
+        }
+        canvas.drawText(body2, lx, 250f, pText)
 
         var y = 280f
         val rh = 22f
@@ -374,21 +363,22 @@ class MainActivity : Activity() {
         }
 
         y += 28f
-        canvas.drawText(
+        val note1 = if (isOrder) {
+            if (fr) "Veuillez nous informer dès que la commande sera prête pour l'enlèvement."
+            else "يرجى إعلامنا بمجرد أن تصبح الطلبية جاهزة للاستلام."
+        } else {
             if (fr) "Nous vous informons que ces fournitures ont été achetées et sont désormais"
-            else "نحيطكم علماً بأن هذه المواد متوفرة حالياً بالورشة لضمان استمرارية",
-            lx,
-            y,
-            pText
-        )
-        y += 15f
-        canvas.drawText(
-            if (fr) "disponibles pour assurer la bonne continuité des travaux de votre villa."
-            else "الأشغال وحسن سيرها التام.",
-            lx,
-            y,
-            pText
-        )
+            else "نحيطكم علماً بأن هذه المواد متوفرة حالياً بالورشة لضمان استمرارية"
+        }
+        canvas.drawText(note1, lx, y, pText)
+
+        if (!isOrder) {
+            y += 15f
+            val note2 = if (fr) "disponibles pour assurer la bonne continuité des travaux de votre villa."
+            else "الأشغال وحسن سيرها التام."
+            canvas.drawText(note2, lx, y, pText)
+        }
+
         y += 25f
         canvas.drawText(
             if (fr) "Veuillez agréer, Monsieur $client, nos salutations respectueuses."
