@@ -2,75 +2,172 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:background="#F4F6F9"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="16dp">
 
-        <Button
-            android:id="@+id/btnLang"
-            android:layout_width="wrap_content"
+        <!-- Header Bar -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Langue: FR" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="16dp">
 
+            <TextView
+                android:id="@+id/tvAppTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="BonPeint Pro"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="#1E293B" />
+
+            <Button
+                android:id="@+id/btnLang"
+                android:layout_width="wrap_content"
+                android:layout_height="38dp"
+                android:backgroundTint="#3B82F6"
+                android:text="FR | AR"
+                android:textSize="12sp"
+                android:textColor="#FFFFFF" />
+        </LinearLayout>
+
+        <!-- Document Type Selector -->
         <TextView
+            android:id="@+id/lblDocType"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Type de document / نوع الوثيقة:"
+            android:text="Type de document / نوع الوثيقة"
+            android:textSize="13sp"
             android:textStyle="bold"
-            android:layout_marginTop="8dp" />
+            android:textColor="#475569"
+            android:layout_marginBottom="4dp" />
 
         <Spinner
             android:id="@+id/spinnerDocType"
             android:layout_width="match_parent"
-            android:layout_height="48dp" />
+            android:layout_height="48dp"
+            android:background="@android:drawable/btn_dropdown"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Project & Client Info -->
+        <EditText
+            android:id="@+id/editProject"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:hint="Projet / اسم المشروع (ex: VILLA M. AZZOUZ)"
+            android:background="#FFFFFF"
+            android:paddingHorizontal="12dp"
+            android:textSize="14sp"
+            android:layout_marginBottom="8dp" />
 
         <EditText
             android:id="@+id/editClient"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Client / الزبون (ex: Rafik Azzouz)" />
+            android:layout_height="48dp"
+            android:hint="Destinataire / المستلم (ex: Monsieur Rafik Azzouz)"
+            android:background="#FFFFFF"
+            android:paddingHorizontal="12dp"
+            android:textSize="14sp"
+            android:layout_marginBottom="8dp" />
 
         <EditText
-            android:id="@+id/editProject"
+            android:id="@+id/editCity"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Hassi Messaoud"
+            android:hint="Ville / المدينة"
+            android:background="#FFFFFF"
+            android:paddingHorizontal="12dp"
+            android:textSize="14sp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Add Items Section -->
+        <TextView
+            android:id="@+id/lblAddItem"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ajouter une fourniture / إضافة سلعة"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textColor="#475569"
+            android:layout_marginBottom="6dp" />
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Chantier / الورشة (ex: Villa Azzouz)" />
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#CCCCCC"
-            android:layout_marginVertical="12dp" />
+            <EditText
+                android:id="@+id/editItemName"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="2"
+                android:hint="Désignation / المادة"
+                android:background="#FFFFFF"
+                android:paddingHorizontal="10dp"
+                android:textSize="14sp"
+                android:layout_marginEnd="6dp" />
 
-        <EditText
-            android:id="@+id/editItemName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Désignation / المادة (ex: Fixateur Vinxya)" />
-
-        <EditText
-            android:id="@+id/editItemQty"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Quantité / الكمية (ex: 2 bidons)" />
+            <EditText
+                android:id="@+id/editItemQty"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:hint="Quantité / الكمية"
+                android:background="#FFFFFF"
+                android:paddingHorizontal="10dp"
+                android:textSize="14sp" />
+        </LinearLayout>
 
         <Button
             android:id="@+id/btnAdd"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="+ Ajouter / إضافة مادة" />
+            android:layout_height="44dp"
+            android:backgroundTint="#0284C7"
+            android:text="+ Ajouter à la liste / إضافة إلى القائمة"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp" />
 
+        <!-- Table Container -->
+        <TextView
+            android:id="@+id/lblList"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Liste des articles / قائمة السلع المضافة:"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textColor="#475569"
+            android:layout_marginBottom="6dp" />
+
+        <TableLayout
+            android:id="@+id/tableItems"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#FFFFFF"
+            android:padding="8dp"
+            android:stretchColumns="1"
+            android:layout_marginBottom="20dp" />
+
+        <!-- Action Button -->
         <Button
             android:id="@+id/btnGenerate"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:backgroundTint="#2E7D32"
+            android:layout_height="54dp"
+            android:backgroundTint="#15803D"
             android:textColor="#FFFFFF"
-            android:text="Générer &amp; Partager PDF / استخراج ومشاركة" />
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:text="Générer &amp; Partager Document (PDF)" />
 
     </LinearLayout>
 </ScrollView>
