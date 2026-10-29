@@ -254,7 +254,7 @@ class MainActivity : Activity() {
     private fun checkAppUpdate() {
         Thread {
             try {
-                val url = URL("https://api.github.com/repos/doudihmd-blip/BonPeint/releases/latest")
+                val url = URL("https://api.github.com/repos/doudihmd-blip/BonPeintApp/releases/latest")
                 val conn = url.openConnection() as HttpURLConnection
                 conn.requestMethod = "GET"
                 conn.setRequestProperty("User-Agent", "BonPeintApp")
