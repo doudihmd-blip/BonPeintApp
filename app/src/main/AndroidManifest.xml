@@ -4,7 +4,9 @@
 
     <application
         android:allowBackup="true"
-        android:label="BonPeint"
+        android:label="BonPeint Pro"
+        android:icon="@drawable/ic_launcher_brush"
+        android:roundIcon="@drawable/ic_launcher_brush"
         android:supportsRtl="true"
         android:theme="@android:style/Theme.Holo.Light.NoActionBar">
 
