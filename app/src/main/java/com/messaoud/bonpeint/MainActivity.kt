@@ -1,6 +1,7 @@
 package com.messaoud.bonpeint
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
@@ -18,9 +19,12 @@ import android.print.PrintDocumentInfo
 import android.print.PrintManager
 import android.widget.*
 import androidx.core.content.FileProvider
+import org.json.JSONObject
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.net.HttpURLConnection
+import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -31,6 +35,7 @@ class MainActivity : Activity() {
 
     private val items = ArrayList<Item>()
     private var isFrench = true
+    private val currentVersionTag = "v1.0.4"
 
     private val docTypesFr = arrayOf(
         "ÉTAT DES FOURNITURES ACHETÉES",
@@ -49,6 +54,8 @@ class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        checkAppUpdate()
 
         val spinnerDocType = findViewById<Spinner>(R.id.spinnerDocType)
         val editProject = findViewById<EditText>(R.id.editProject)
@@ -116,7 +123,6 @@ class MainActivity : Activity() {
                 val t1 = TextView(this).apply { text = " ${i + 1} "; setPadding(6, 6, 6, 6) }
                 val t2 = TextView(this).apply { text = " ${itm.name} "; setPadding(6, 6, 6, 6) }
                 val t3 = TextView(this).apply { text = " ${itm.quantity} "; setPadding(6, 6, 6, 6) }
-
                 val bDel = Button(this).apply {
                     text = "X"
                     setTextColor(Color.RED)
@@ -245,6 +251,68 @@ class MainActivity : Activity() {
         }
     }
 
+    private fun checkAppUpdate() {
+        Thread {
+            try {
+                val url = URL("https://api.github.com/repos/doudihmd-blip/BonPeint/releases/latest")
+                val conn = url.openConnection() as HttpURLConnection
+                conn.requestMethod = "GET"
+                conn.setRequestProperty("User-Agent", "BonPeintApp")
+                conn.connectTimeout = 4000
+                conn.readTimeout = 4000
+
+                if (conn.responseCode == 200) {
+                    val response = conn.inputStream.bufferedReader().use { it.readText() }
+                    val json = JSONObject(response)
+                    val latestTag = json.optString("tag_name", "")
+
+                    if (latestTag.isNotEmpty() && latestTag != currentVersionTag) {
+                        var downloadUrl = ""
+                        val assets = json.optJSONArray("assets")
+                        if (assets != null) {
+                            for (i in 0 until assets.length()) {
+                                val asset = assets.getJSONObject(i)
+                                if (asset.getString("name").endsWith(".apk")) {
+                                    downloadUrl = asset.getString("browser_download_url")
+                                    break
+                                }
+                            }
+                        }
+
+                        if (downloadUrl.isNotEmpty()) {
+                            runOnUiThread {
+                                showUpdateDialog(latestTag, downloadUrl)
+                            }
+                        }
+                    }
+                }
+            } catch (_: Exception) {}
+        }.start()
+    }
+
+    private fun showUpdateDialog(newVersion: String, downloadUrl: String) {
+        if (isFinishing) return
+        val title = if (isFrench) "Mise à jour disponible" else "تحديث جديد متوفر"
+        val msg = if (isFrench) {
+            "Une nouvelle version ($newVersion) est disponible. Voulez-vous la télécharger maintenant ?"
+        } else {
+            "يتوفر إصدار جديد ($newVersion) لتطبيق Bon Peint. هل ترغب في التحميل الآن؟"
+        }
+        val btnOk = if (isFrench) "Mettre à jour" else "تحديث الآن"
+        val btnCancel = if (isFrench) "Plus tard" else "لاحقاً"
+
+        AlertDialog.Builder(this)
+            .setTitle(title)
+            .setMessage(msg)
+            .setCancelable(true)
+            .setPositiveButton(btnOk) { _, _ ->
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(downloadUrl))
+                startActivity(intent)
+            }
+            .setNegativeButton(btnCancel, null)
+            .show()
+    }
+
     private fun writePdf(
         list: List<Item>,
         title: String,
@@ -303,7 +371,7 @@ class MainActivity : Activity() {
         val dateLabel = if (fr) "$city, le $dateStr" else "$city، في $dateStr"
         canvas.drawText(dateLabel, rx, 135f, pRight)
 
-        val isOrder = (docIndex == 1) // Bon de commande / طلب شراء
+        val isOrder = (docIndex == 1)
 
         val destLabel = if (fr) "Destinataire : $client" else "المستلم: $client"
         canvas.drawText(destLabel, lx, 165f, pBold)
