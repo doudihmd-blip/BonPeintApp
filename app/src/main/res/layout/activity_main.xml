@@ -60,12 +60,42 @@
             android:layout_height="48dp"
             android:layout_marginBottom="10dp" />
 
+        <!-- Painter Info (Name & Phone) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
+
+            <EditText
+                android:id="@+id/editPainterName"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1.2"
+                android:hint="Nom du peintre / اسم الدهان"
+                android:background="#FFFFFF"
+                android:padding="10dp"
+                android:textSize="14sp"
+                android:layout_marginEnd="6dp" />
+
+            <EditText
+                android:id="@+id/editPainterPhone"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:hint="N° Tél / الهاتف"
+                android:inputType="phone"
+                android:background="#FFFFFF"
+                android:padding="10dp"
+                android:textSize="14sp" />
+        </LinearLayout>
+
         <!-- Project & Client Info -->
         <EditText
             android:id="@+id/editProject"
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:hint="Projet / اسم المشروع (ex: VILLA M. AZZOUZ)"
+            android:hint="Projet / اسم المشروع (ex: Chantier Villa)"
             android:background="#FFFFFF"
             android:padding="10dp"
             android:textSize="14sp"
@@ -75,7 +105,7 @@
             android:id="@+id/editClient"
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:hint="Destinataire / المستلم (ex: Monsieur Rafik Azzouz)"
+            android:hint="Destinataire / المستلم (ex: Magasin Peinture)"
             android:background="#FFFFFF"
             android:padding="10dp"
             android:textSize="14sp"
@@ -156,7 +186,7 @@
             android:textStyle="bold"
             android:layout_marginBottom="14dp" />
 
-        <!-- Table Container: تم تفعيل shrinkColumns و stretchColumns لمنع خروج الأعمدة -->
+        <!-- Table Container -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

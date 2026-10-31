@@ -52,6 +52,8 @@ class MainActivity : Activity() {
         setContentView(R.layout.activity_main)
 
         val spinnerDocType = findViewById<Spinner>(R.id.spinnerDocType)
+        val editPainterName = findViewById<EditText>(R.id.editPainterName)
+        val editPainterPhone = findViewById<EditText>(R.id.editPainterPhone)
         val editProject = findViewById<EditText>(R.id.editProject)
         val editClient = findViewById<EditText>(R.id.editClient)
         val editCity = findViewById<EditText>(R.id.editCity)
@@ -95,7 +97,6 @@ class MainActivity : Activity() {
                 return
             }
 
-            // ترويسة الجدول
             val header = TableRow(this).apply {
                 setBackgroundColor(Color.LTGRAY)
                 gravity = Gravity.CENTER_VERTICAL
@@ -131,7 +132,6 @@ class MainActivity : Activity() {
             header.addView(h4)
             tableItems.addView(header)
 
-            // صفوف العناصر المضافة
             for (i in 0 until items.size) {
                 val itm = items[i]
                 val row = TableRow(this).apply {
@@ -147,7 +147,6 @@ class MainActivity : Activity() {
                 val t2 = TextView(this).apply {
                     text = itm.name
                     setPadding(6, 10, 6, 10)
-                    // السماح للنص بالنزول لأسطر متعددة عند الطول الزائد
                     isSingleLine = false
                 }
                 val t3 = TextView(this).apply {
@@ -162,7 +161,6 @@ class MainActivity : Activity() {
                     setTypeface(null, Typeface.BOLD)
                     setTextColor(Color.WHITE)
                     setBackgroundColor(Color.parseColor("#DC2626"))
-                    // حجم ثابت للزر حتى لا يختفي أبداً
                     layoutParams = TableRow.LayoutParams(85, 75).apply {
                         setMargins(4, 4, 4, 4)
                     }
@@ -217,12 +215,14 @@ class MainActivity : Activity() {
         fun createPdf(): File {
             val docIndex = spinnerDocType.selectedItemPosition
             val title = spinnerDocType.selectedItem.toString()
-            val project = editProject.text.toString().trim().ifEmpty { "TRAVAUX DE PEINTURE" }
-            val client = editClient.text.toString().trim().ifEmpty { "Client" }
+            val project = editProject.text.toString().trim().ifEmpty { "CHANTIER" }
+            val client = editClient.text.toString().trim().ifEmpty { "" }
+            val painter = editPainterName.text.toString().trim()
+            val phone = editPainterPhone.text.toString().trim()
             val city = editCity.text.toString().trim().ifEmpty { "Hassi Messaoud" }
             val date = editDate.text.toString().trim().ifEmpty { getDateStr() }
 
-            return writePdf(items, title, project, client, city, date, isFrench, docIndex)
+            return writePdf(items, title, project, client, painter, phone, city, date, isFrench, docIndex)
         }
 
         btnGenerate.setOnClickListener {
@@ -296,6 +296,8 @@ class MainActivity : Activity() {
         title: String,
         proj: String,
         client: String,
+        painter: String,
+        phone: String,
         city: String,
         dateStr: String,
         fr: Boolean,
@@ -314,7 +316,7 @@ class MainActivity : Activity() {
         }
         val pSub = Paint().apply {
             color = Color.BLACK
-            textSize = 13f
+            textSize = 12f
             typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
             textAlign = Paint.Align.CENTER
         }
@@ -342,17 +344,35 @@ class MainActivity : Activity() {
         val lx = 45f
         val rx = 550f
 
-        canvas.drawText(title.uppercase(), cx, 75f, pTitle)
-        canvas.drawText(proj.uppercase(), cx, 100f, pSub)
+        canvas.drawText(title.uppercase(), cx, 65f, pTitle)
+        canvas.drawText(proj.uppercase(), cx, 85f, pSub)
 
+        // ترويسة الحرفي ورقم هاتفه والتاريخ
         val pRight = Paint(pText).apply { textAlign = Paint.Align.RIGHT }
         val dateLabel = if (fr) "$city, le $dateStr" else "$city، في $dateStr"
-        canvas.drawText(dateLabel, rx, 135f, pRight)
+        canvas.drawText(dateLabel, rx, 115f, pRight)
+
+        var currentY = 115f
+        if (painter.isNotEmpty() || phone.isNotEmpty()) {
+            val painterLabel = buildString {
+                append(if (fr) "Peintre : " else "الحرفي (الدهان): ")
+                append(painter)
+                if (phone.isNotEmpty()) {
+                    append(if (fr) "  |  Tél : " else "  |  هاتف: ")
+                    append(phone)
+                }
+            }
+            canvas.drawText(painterLabel, lx, currentY, pBold)
+            currentY += 20f
+        }
+
+        if (client.isNotEmpty()) {
+            val destLabel = if (fr) "Destinataire : $client" else "المستلم: $client"
+            canvas.drawText(destLabel, lx, currentY, pBold)
+            currentY += 20f
+        }
 
         val isOrder = (docIndex == 1)
-
-        val destLabel = if (fr) "Destinataire : $client" else "المستلم: $client"
-        canvas.drawText(destLabel, lx, 165f, pBold)
 
         val objText = if (isOrder) {
             if (fr) "Objet : Commande de fournitures de peinture pour chantier."
@@ -361,9 +381,11 @@ class MainActivity : Activity() {
             if (fr) "Objet : Récapitulatif des fournitures de peinture achetées pour les travaux."
             else "الموضوع: بيان مقتنيات ولوازم الدهان المشتراة لأشغال الورشة."
         }
-        canvas.drawText(objText, lx, 185f, pText)
+        canvas.drawText(objText, lx, currentY, pText)
+        currentY += 25f
 
-        canvas.drawText(if (fr) "Monsieur," else "سيدي،", lx, 215f, pText)
+        canvas.drawText(if (fr) "Monsieur," else "سيدي،", lx, currentY, pText)
+        currentY += 18f
 
         val body1 = if (isOrder) {
             if (fr) "Nous vous prions de bien vouloir nous préparer les fournitures de peinture"
@@ -372,18 +394,20 @@ class MainActivity : Activity() {
             if (fr) "Veuillez trouver ci-dessous la liste des fournitures de peinture que nous avons"
             else "تجدون أدناه قائمة بلوازم الدهان التي تم اقتناؤها ومطابقتها لاحتياجات ورشتكم،"
         }
-        canvas.drawText(body1, lx, 235f, pText)
+        canvas.drawText(body1, lx, currentY, pText)
+        currentY += 15f
 
         val body2 = if (isOrder) {
             if (fr) "mentionnées ci-dessous, nécessaires pour la continuité des travaux :"
             else "والمطلوبة لمواصلة واستمرار الأشغال في أفضل الظروف:"
         } else {
-            if (fr) "achetées pour les travaux de votre villa, conformément aux besoins du chantier."
+            if (fr) "achetées pour les travaux, conformément aux besoins du chantier."
             else "وفقاً لمتطلبات واستمرار العمل في أحسن الظروف."
         }
-        canvas.drawText(body2, lx, 250f, pText)
+        canvas.drawText(body2, lx, currentY, pText)
+        currentY += 22f
 
-        var y = 280f
+        var y = currentY
         val rh = 22f
 
         canvas.drawRect(lx, y, rx, y + rh, pFill)
@@ -420,14 +444,15 @@ class MainActivity : Activity() {
 
         if (!isOrder) {
             y += 15f
-            val note2 = if (fr) "disponibles pour assurer la bonne continuité des travaux de votre villa."
+            val note2 = if (fr) "disponibles pour assurer la bonne continuité des travaux."
             else "الأشغال وحسن سيرها التام."
             canvas.drawText(note2, lx, y, pText)
         }
 
         y += 25f
+        val closingName = if (client.isNotEmpty()) " $client" else ""
         canvas.drawText(
-            if (fr) "Veuillez agréer, Monsieur $client, nos salutations respectueuses."
+            if (fr) "Veuillez agréer, Monsieur$closingName, nos salutations respectueuses."
             else "وتفضلوا بقبول فائق التقدير والاحترام.",
             lx,
             y,
