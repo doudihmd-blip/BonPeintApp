@@ -1,7 +1,6 @@
 package com.messaoud.bonpeint
 
 import android.app.Activity
-import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
@@ -17,14 +16,12 @@ import android.print.PrintAttributes
 import android.print.PrintDocumentAdapter
 import android.print.PrintDocumentInfo
 import android.print.PrintManager
+import android.view.Gravity
 import android.widget.*
 import androidx.core.content.FileProvider
-import org.json.JSONObject
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
-import java.net.HttpURLConnection
-import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -35,7 +32,6 @@ class MainActivity : Activity() {
 
     private val items = ArrayList<Item>()
     private var isFrench = true
-    private val currentVersionTag = "v1.0.4"
 
     private val docTypesFr = arrayOf(
         "ÉTAT DES FOURNITURES ACHETÉES",
@@ -54,8 +50,6 @@ class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        checkAppUpdate()
 
         val spinnerDocType = findViewById<Spinner>(R.id.spinnerDocType)
         val editProject = findViewById<EditText>(R.id.editProject)
@@ -95,19 +89,41 @@ class MainActivity : Activity() {
                 val tvEmpty = TextView(this)
                 tvEmpty.text = if (isFrench) "Aucun article." else "القائمة فارغة."
                 tvEmpty.setTextColor(Color.GRAY)
-                tvEmpty.setPadding(10, 10, 10, 10)
+                tvEmpty.setPadding(12, 12, 12, 12)
                 row.addView(tvEmpty)
                 tableItems.addView(row)
                 return
             }
 
-            val header = TableRow(this)
-            header.setBackgroundColor(Color.LTGRAY)
+            // ترويسة الجدول
+            val header = TableRow(this).apply {
+                setBackgroundColor(Color.LTGRAY)
+                gravity = Gravity.CENTER_VERTICAL
+            }
 
-            val h1 = TextView(this).apply { text = " N° "; setTypeface(null, Typeface.BOLD); setPadding(6, 6, 6, 6) }
-            val h2 = TextView(this).apply { text = if (isFrench) " Désignation " else " المادة "; setTypeface(null, Typeface.BOLD); setPadding(6, 6, 6, 6) }
-            val h3 = TextView(this).apply { text = if (isFrench) " Qté " else " الكمية "; setTypeface(null, Typeface.BOLD); setPadding(6, 6, 6, 6) }
-            val h4 = TextView(this).apply { text = " X "; setTypeface(null, Typeface.BOLD); setPadding(6, 6, 6, 6) }
+            val h1 = TextView(this).apply {
+                text = " N° "
+                setTypeface(null, Typeface.BOLD)
+                setPadding(6, 8, 6, 8)
+                gravity = Gravity.CENTER
+            }
+            val h2 = TextView(this).apply {
+                text = if (isFrench) " Désignation " else " المادة "
+                setTypeface(null, Typeface.BOLD)
+                setPadding(6, 8, 6, 8)
+            }
+            val h3 = TextView(this).apply {
+                text = if (isFrench) " Qté " else " الكمية "
+                setTypeface(null, Typeface.BOLD)
+                setPadding(6, 8, 6, 8)
+                gravity = Gravity.CENTER
+            }
+            val h4 = TextView(this).apply {
+                text = " X "
+                setTypeface(null, Typeface.BOLD)
+                setPadding(6, 8, 6, 8)
+                gravity = Gravity.CENTER
+            }
 
             header.addView(h1)
             header.addView(h2)
@@ -115,17 +131,41 @@ class MainActivity : Activity() {
             header.addView(h4)
             tableItems.addView(header)
 
+            // صفوف العناصر المضافة
             for (i in 0 until items.size) {
                 val itm = items[i]
-                val row = TableRow(this)
-                row.setBackgroundColor(Color.WHITE)
+                val row = TableRow(this).apply {
+                    setBackgroundColor(if (i % 2 == 0) Color.WHITE else Color.parseColor("#F8FAFC"))
+                    gravity = Gravity.CENTER_VERTICAL
+                }
 
-                val t1 = TextView(this).apply { text = " ${i + 1} "; setPadding(6, 6, 6, 6) }
-                val t2 = TextView(this).apply { text = " ${itm.name} "; setPadding(6, 6, 6, 6) }
-                val t3 = TextView(this).apply { text = " ${itm.quantity} "; setPadding(6, 6, 6, 6) }
+                val t1 = TextView(this).apply {
+                    text = "${i + 1}"
+                    setPadding(6, 10, 6, 10)
+                    gravity = Gravity.CENTER
+                }
+                val t2 = TextView(this).apply {
+                    text = itm.name
+                    setPadding(6, 10, 6, 10)
+                    // السماح للنص بالنزول لأسطر متعددة عند الطول الزائد
+                    isSingleLine = false
+                }
+                val t3 = TextView(this).apply {
+                    text = itm.quantity
+                    setPadding(6, 10, 6, 10)
+                    gravity = Gravity.CENTER
+                }
+
                 val bDel = Button(this).apply {
                     text = "X"
-                    setTextColor(Color.RED)
+                    textSize = 12f
+                    setTypeface(null, Typeface.BOLD)
+                    setTextColor(Color.WHITE)
+                    setBackgroundColor(Color.parseColor("#DC2626"))
+                    // حجم ثابت للزر حتى لا يختفي أبداً
+                    layoutParams = TableRow.LayoutParams(85, 75).apply {
+                        setMargins(4, 4, 4, 4)
+                    }
                     setOnClickListener {
                         items.removeAt(i)
                         refreshTable()
@@ -249,68 +289,6 @@ class MainActivity : Activity() {
                 PrintAttributes.Builder().build()
             )
         }
-    }
-
-    private fun checkAppUpdate() {
-        Thread {
-            try {
-                val url = URL("https://api.github.com/repos/doudihmd-blip/BonPeintApp/releases/latest")
-                val conn = url.openConnection() as HttpURLConnection
-                conn.requestMethod = "GET"
-                conn.setRequestProperty("User-Agent", "BonPeintApp")
-                conn.connectTimeout = 4000
-                conn.readTimeout = 4000
-
-                if (conn.responseCode == 200) {
-                    val response = conn.inputStream.bufferedReader().use { it.readText() }
-                    val json = JSONObject(response)
-                    val latestTag = json.optString("tag_name", "")
-
-                    if (latestTag.isNotEmpty() && latestTag != currentVersionTag) {
-                        var downloadUrl = ""
-                        val assets = json.optJSONArray("assets")
-                        if (assets != null) {
-                            for (i in 0 until assets.length()) {
-                                val asset = assets.getJSONObject(i)
-                                if (asset.getString("name").endsWith(".apk")) {
-                                    downloadUrl = asset.getString("browser_download_url")
-                                    break
-                                }
-                            }
-                        }
-
-                        if (downloadUrl.isNotEmpty()) {
-                            runOnUiThread {
-                                showUpdateDialog(latestTag, downloadUrl)
-                            }
-                        }
-                    }
-                }
-            } catch (_: Exception) {}
-        }.start()
-    }
-
-    private fun showUpdateDialog(newVersion: String, downloadUrl: String) {
-        if (isFinishing) return
-        val title = if (isFrench) "Mise à jour disponible" else "تحديث جديد متوفر"
-        val msg = if (isFrench) {
-            "Une nouvelle version ($newVersion) est disponible. Voulez-vous la télécharger maintenant ?"
-        } else {
-            "يتوفر إصدار جديد ($newVersion) لتطبيق Bon Peint. هل ترغب في التحميل الآن؟"
-        }
-        val btnOk = if (isFrench) "Mettre à jour" else "تحديث الآن"
-        val btnCancel = if (isFrench) "Plus tard" else "لاحقاً"
-
-        AlertDialog.Builder(this)
-            .setTitle(title)
-            .setMessage(msg)
-            .setCancelable(true)
-            .setPositiveButton(btnOk) { _, _ ->
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(downloadUrl))
-                startActivity(intent)
-            }
-            .setNegativeButton(btnCancel, null)
-            .show()
     }
 
     private fun writePdf(

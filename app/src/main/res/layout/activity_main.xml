@@ -156,7 +156,7 @@
             android:textStyle="bold"
             android:layout_marginBottom="14dp" />
 
-        <!-- Table Container -->
+        <!-- Table Container: تم تفعيل shrinkColumns و stretchColumns لمنع خروج الأعمدة -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -171,8 +171,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="#FFFFFF"
-            android:padding="8dp"
+            android:padding="4dp"
             android:stretchColumns="1"
+            android:shrinkColumns="1"
             android:layout_marginBottom="20dp" />
 
         <!-- Print & Share Actions -->
