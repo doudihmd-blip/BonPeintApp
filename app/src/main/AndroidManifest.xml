@@ -3,6 +3,7 @@
     package="com.messaoud.bonpeint">
 
     <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:label="BonPeint Pro"

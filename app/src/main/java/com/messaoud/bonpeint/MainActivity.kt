@@ -1,6 +1,7 @@
 package com.messaoud.bonpeint
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
@@ -19,12 +20,18 @@ import android.print.PrintManager
 import android.view.Gravity
 import android.widget.*
 import androidx.core.content.FileProvider
+import org.json.JSONObject
+import java.io.BufferedReader
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.io.InputStreamReader
+import java.net.HttpURLConnection
+import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlin.concurrent.thread
 
 class MainActivity : Activity() {
 
@@ -32,6 +39,7 @@ class MainActivity : Activity() {
 
     private val items = ArrayList<Item>()
     private var isFrench = true
+    private val currentVersionCode = 5
 
     private val docTypesFr = arrayOf(
         "ÉTAT DES FOURNITURES ACHETÉES",
@@ -50,6 +58,8 @@ class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        checkAppUpdates()
 
         val spinnerDocType = findViewById<Spinner>(R.id.spinnerDocType)
         val editPainterName = findViewById<EditText>(R.id.editPainterName)
@@ -291,6 +301,53 @@ class MainActivity : Activity() {
         }
     }
 
+    private fun checkAppUpdates() {
+        thread {
+            try {
+                val url = URL("https://raw.githubusercontent.com/doudihmd-blip/BonPeintApp/main/version.json")
+                val connection = (url.openConnection() as HttpURLConnection).apply {
+                    connectTimeout = 4000
+                    readTimeout = 4000
+                    requestMethod = "GET"
+                }
+
+                if (connection.responseCode == HttpURLConnection.HTTP_OK) {
+                    val reader = BufferedReader(InputStreamReader(connection.inputStream))
+                    val response = StringBuilder()
+                    var line: String?
+                    while (reader.readLine().also { line = it } != null) {
+                        response.append(line)
+                    }
+                    reader.close()
+
+                    val json = JSONObject(response.toString())
+                    val latestCode = json.getInt("latestVersionCode")
+                    val latestName = json.getString("latestVersionName")
+                    val downloadUrl = json.getString("downloadUrl")
+
+                    if (latestCode > currentVersionCode) {
+                        runOnUiThread {
+                            AlertDialog.Builder(this)
+                                .setTitle(if (isFrench) "Mise à jour disponible" else "تحديث جديد متوفر!")
+                                .setMessage(
+                                    if (isFrench) "Une nouvelle version ($latestName) de BonPeint Pro est disponible.\nVoulez-vous la télécharger ?"
+                                    else "تتوفر نسخة جديدة ($latestName) من تطبيق BonPeint Pro.\nهل تريد تنزيل التحديث الآن؟"
+                                )
+                                .setPositiveButton(if (isFrench) "Mettre à jour" else "تحديث") { _, _ ->
+                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(downloadUrl))
+                                    startActivity(intent)
+                                }
+                                .setNegativeButton(if (isFrench) "Plus tard" else "لاحقاً", null)
+                                .show()
+                        }
+                    }
+                }
+            } catch (_: Exception) {
+                // تجاوز الفحص بهدوء في حال انقطاع النت
+            }
+        }
+    }
+
     private fun writePdf(
         list: List<Item>,
         title: String,
@@ -347,7 +404,6 @@ class MainActivity : Activity() {
         canvas.drawText(title.uppercase(), cx, 65f, pTitle)
         canvas.drawText(proj.uppercase(), cx, 85f, pSub)
 
-        // ترويسة الحرفي ورقم هاتفه والتاريخ
         val pRight = Paint(pText).apply { textAlign = Paint.Align.RIGHT }
         val dateLabel = if (fr) "$city, le $dateStr" else "$city، في $dateStr"
         canvas.drawText(dateLabel, rx, 115f, pRight)
